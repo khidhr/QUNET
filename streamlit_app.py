@@ -73,7 +73,6 @@ class LowParamsDecoderSequential(nn.Module):
         self.upconv5 = nn.ConvTranspose2d(64 + 128, 1, kernel_size=3, stride=2, padding=1, output_padding=1)
 
     def forward(self, x, x1, x2, x3, x4, x5):
-          # Debug: Check the shape of x from quantum layer
         x = nn.ReLU()(self.fc1(x))
        
         x = nn.ReLU()(self.fc2(x))
@@ -92,7 +91,7 @@ class LowParamsDecoderSequential(nn.Module):
         
         x = self.upconv5(torch.cat((x, x1), dim=1))  # Concatenate and apply transposed convolution
      
-        x = torch.sigmoid(x) # round it since it's either black or white
+        x = torch.sigmoid(x) 
        
         return x
     
@@ -100,7 +99,7 @@ def build_lowparams_quantum_autoencoder_sequential():
     input_shape = (3, 400, 400)
     
 
-    # Instantiate the encoder, decoder, and quantum layer
+    # Instantiate the encoder and decoder
     encoder = LowPramsEncoderSequential(input_shape=input_shape)
     decoder = LowParamsDecoderSequential()
 
@@ -126,16 +125,16 @@ LowParamsSegUnet = build_lowparams_quantum_autoencoder_sequential()
 LowParamsSegUnet.load_state_dict(torch.load("lowParms_seg2.pth", map_location=torch.device('cpu')))
 LowParamsSegUnet.eval()
 
-# Define the image transformations (if needed)
+
 transform = transforms.Compose([
-    transforms.Resize((400, 400)),  # Resize to the input size of your model
+    transforms.Resize((400, 400)),  # Resize to the input size of QUNET model
     transforms.ToTensor(),
 ])
 
 ############## mask post-processing ################
 from scipy.ndimage import median_filter
 def apply_median_filter(segmentation, size=3):
-    return median_filter(segmentation, size=size)
+    return median_filter(np.round(segmentation), size=size)
 
 
 
@@ -146,8 +145,7 @@ def predict(image):
     image = transform(image).unsqueeze(0)  # Add batch dimension
     with torch.no_grad():
         output = LowParamsSegUnet(image)
-    # Assuming output is a mask, you might need to process it depending on your model
-    mask = output.squeeze().cpu().numpy()  # Adjust depending on your output format
+    mask = output.squeeze().cpu().numpy() 
     return mask
 
 st.title("Skin cancer Segmentation App using QUNET: a quantum enhanced UNET")
@@ -161,7 +159,7 @@ st.warning(
 
 st.write("Upload an image of skin cancer:")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
@@ -176,7 +174,7 @@ if uploaded_file is not None:
     with col2:
         st.image(mask, caption="Raw Segmentation Mask", use_column_width=True)
     with col3:
-        st.image(apply_median_filter(np.round(mask)), caption="Processed Segmentation Mask", use_column_width=True)
+        st.image(apply_median_filter(mask), caption="Processed Segmentation Mask", use_column_width=True)
 
 
 
