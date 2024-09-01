@@ -150,8 +150,16 @@ def predict(image):
     mask = output.squeeze().cpu().numpy()  # Adjust depending on your output format
     return mask
 
-st.title("Image Segmentation App")
-st.write("Upload an image to get the segmentation mask.")
+st.title("Skin cancer Segmentation App using QUNET: a quantum enhanced UNET")
+
+
+st.warning(
+    "⚠️ This application is developed for research purposes only. "
+    "The predicted segmentation masks are not intended for clinical or diagnostic use. "
+    "Please consult a medical professional for accurate diagnosis and treatment."
+)
+
+st.write("Upload an image of skin cancer:")
 
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
