@@ -134,7 +134,7 @@ transform = transforms.Compose([
 ############## mask post-processing ################
 from scipy.ndimage import median_filter
 def apply_median_filter(segmentation, size=3):
-    return median_filter((segmentation >.6).astype(np.uint8), size=size)
+    return median_filter(np.round(segmentation), size=size)
 
 
 
